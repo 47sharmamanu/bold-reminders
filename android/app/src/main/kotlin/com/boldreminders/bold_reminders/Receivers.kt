@@ -11,6 +11,8 @@ class AlarmReceiver : BroadcastReceiver() {
         val title = intent.getStringExtra(AlarmScheduler.EXTRA_TITLE) ?: "Reminder"
         val at = intent.getLongExtra(AlarmScheduler.EXTRA_AT, System.currentTimeMillis())
         AlarmStore.removePending(context, id)
+        // Never ring the same calendar alarm twice.
+        if (id != CalendarSync.TEST_ALARM_ID) AlarmStore.addToIdSet(context, CalendarSync.KEY_FIRED, id)
 
         val service = Intent(context, AlarmService::class.java)
             .setAction(AlarmService.ACTION_START)
@@ -25,7 +27,7 @@ class AlarmReceiver : BroadcastReceiver() {
     }
 }
 
-/** Restores alarms after reboot, app update, or a time / time-zone change. */
+/** Restores alarms and sync jobs after reboot, app update, or a time / time-zone change. */
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val reason = when (intent.action) {
@@ -35,6 +37,17 @@ class BootReceiver : BroadcastReceiver() {
             Intent.ACTION_TIMEZONE_CHANGED -> "time-zone change"
             else -> "permission change"
         }
-        AlarmScheduler.restoreAll(context, reason)
+        val pending = goAsync()
+        Thread {
+            try {
+                AlarmScheduler.restoreAll(context, reason)
+                SyncJobs.schedule(context)
+                CalendarSync.sync(context, reason)
+            } catch (e: Exception) {
+                AlarmStore.log(context, "error", "Restore after $reason failed: ${e.message}")
+            } finally {
+                pending.finish()
+            }
+        }.start()
     }
 }

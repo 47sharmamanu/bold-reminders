@@ -21,7 +21,7 @@ object AlarmScheduler {
     }
 
     /** Returns true if the alarm was scheduled. */
-    fun schedule(ctx: Context, id: Int, title: String, at: Long): Boolean {
+    fun schedule(ctx: Context, id: Int, title: String, at: Long, detail: String = ""): Boolean {
         if (!canScheduleExact(ctx)) {
             AlarmStore.log(ctx, "error", "Could not schedule \"$title\": exact alarms not allowed")
             return false
@@ -29,7 +29,7 @@ object AlarmScheduler {
         val am = ctx.getSystemService(AlarmManager::class.java)
         val info = AlarmManager.AlarmClockInfo(at, showIntent(ctx))
         am.setAlarmClock(info, firePendingIntent(ctx, id, title, at))
-        AlarmStore.putPending(ctx, PendingAlarm(id, title, at))
+        AlarmStore.putPending(ctx, PendingAlarm(id, title, at, detail))
         return true
     }
 
@@ -52,9 +52,10 @@ object AlarmScheduler {
         var restored = 0
         AlarmStore.pending(ctx).forEach { a ->
             if (a.at > now) {
-                if (schedule(ctx, a.id, a.title, a.at)) restored++
+                if (schedule(ctx, a.id, a.title, a.at, a.detail)) restored++
             } else {
                 AlarmStore.removePending(ctx, a.id)
+                if (a.id != CalendarSync.TEST_ALARM_ID) AlarmStore.addToIdSet(ctx, CalendarSync.KEY_FIRED, a.id)
                 AlarmStore.log(
                     ctx, "missed",
                     "${a.title} (${AlarmStore.timeText(a.at)}) did not ring: phone was off or restarting"

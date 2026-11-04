@@ -10,15 +10,16 @@ Open the link on your Android phone, download, and install (allow "Install unkno
 
 ## Status
 
-**Stage A — one test alarm.** The app can set a test alarm 1 or 2 minutes ahead and ring it properly:
+**Calendar alarms.** Timed events on the calendars you choose ring at their start time:
 
+- Reads the calendars already on the phone (no Google sign-in); default: calendars named "Meeting…" or "Deep work…"
+- Next 48 hours, one alarm per start time; all-day, cancelled and declined events are skipped
+- Same event on two calendars rings once; events at the same minute share one alarm
+- Moved or deleted events update their alarm; events that arrive more than 5 minutes late are skipped and logged
+- Syncs when calendar data changes, about every 15 minutes, on app open and after a restart
 - Full-screen alarm over the lock screen; heads-up banner with sound when the phone is in use
-- Plays on the alarm audio stream and vibrates
-- Rings for up to 10 minutes, then stops and leaves a "Missed alarm" notification
-- Survives app close, reboot and time changes (alarms are restored)
-- Setup checklist and an on-screen log of scheduled, rung, dismissed and missed alarms
-
-Next stages: read Google Calendar from the phone, ring selected calendars at event start, keep alarms in sync.
+- Rings on the alarm audio stream for up to 10 minutes, then leaves a "Missed alarm" notification
+- Home screen lists upcoming alarms; Settings holds calendars, setup checklist, test alarm and log
 
 ## How it's built
 
@@ -29,6 +30,6 @@ Next stages: read Google Calendar from the phone, ring selected calendars at eve
 ## First-time setup on the phone
 
 1. Install the APK and open **Bold Reminders**.
-2. Fix any orange items in the setup checklist (notifications, exact alarms, full-screen alarm, battery).
-3. On Samsung: Settings → Battery → Background usage limits → add Bold Reminders to **Never sleeping apps**.
-4. Tap **Test alarm in 2 min**, lock the phone, and wait.
+2. Allow calendar access, then open Settings (gear icon) and tick the calendars that should ring.
+3. Fix any orange items in the setup checklist (notifications, exact alarms, full-screen alarm, battery).
+4. On Samsung: Settings → Battery → Background usage limits → add Bold Reminders to **Never sleeping apps**.
